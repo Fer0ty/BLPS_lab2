@@ -33,4 +33,7 @@ public class Petition {
     @ManyToOne
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private User owner;
+
+    @Column(name = "is_approved", nullable = false)
+    private Boolean is_approved = false;
 }
