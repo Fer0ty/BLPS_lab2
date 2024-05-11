@@ -21,8 +21,8 @@ public class Petition {
     @Temporal(TemporalType.TIMESTAMP)
     private Timestamp creationDate = new Timestamp(System.currentTimeMillis());
 
-    @Enumerated(EnumType.STRING)
-    private Country country = Country.RUSSIA;
+    @Column(name = "country", nullable = false)
+    private String  country = Country.RUSSIA.toString();
 
     @Column(nullable = false, length = 50)
     private String title;
@@ -34,6 +34,6 @@ public class Petition {
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private User owner;
 
-    @Column(name = "is_approved", nullable = false)
-    private Boolean is_approved = false;
+    @Column(name = "approveStatus", nullable = false)
+    private String approveStatus = ApproveStatus.ON_HOLD.toString();
 }

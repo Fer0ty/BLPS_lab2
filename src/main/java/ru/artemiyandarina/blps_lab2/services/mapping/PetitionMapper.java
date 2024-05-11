@@ -26,12 +26,10 @@ public class PetitionMapper {
         return mapPetitionBaseToEntity(schema, new Petition());
     }
 
-
-    // Вот тут используется транзакция
     public Petition mapPetitionCreateToEntity(PetitionCreate schema) {
         Petition newPetition = mapPetitionBaseToEntity(schema);
         try {
-            newPetition.setCountry(Country.valueOf(schema.getCountry().toUpperCase()));
+            newPetition.setCountry(Country.valueOf(schema.getCountry().toUpperCase()).toString());
         } catch (IllegalArgumentException e) {
             throw new UnknownCountryException();
         }
@@ -46,6 +44,7 @@ public class PetitionMapper {
         schema.setTitle(entity.getTitle());
         schema.setDescription(entity.getDescription());
         schema.setCreationDate(entity.getCreationDate());
+        schema.setCountry(entity.getCountry());
         return schema;
     }
 }

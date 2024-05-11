@@ -30,6 +30,7 @@ public class PetitionService {
         this.transactionManager = transactionManager;
     }
 
+//  todo: Вывод петиции, у которой статус CONFIRMED
     public Set<PetitionRead> getAll() {
         return petitionRepository.findAll().stream().map(petitionMapper::mapEntityToPetitionRead).collect(Collectors.toSet());
     }
@@ -49,12 +50,10 @@ public class PetitionService {
         }
     }
 
-    //проверка, что у петиции статус is_approved = true
     public PetitionRead getById(Long id) {
         Petition petition = petitionRepository.findById(id).orElseThrow(NotFoundException::new);
         return petitionMapper.mapEntityToPetitionRead(petition);
     }
-    // Проверка, что владелец или модер.
     public void delete(Long documentId) {
         Petition petition = petitionRepository.findById(documentId).orElseThrow(NotFoundException::new);
         securityService.userRequired(petition.getOwner());
