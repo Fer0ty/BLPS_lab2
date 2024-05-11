@@ -59,5 +59,25 @@ public class PetitionService {
         securityService.userRequired(petition.getOwner());
         petitionRepository.delete(petition);
     }
+    public PetitionRead update(Long id, PetitionCreate updatedSchema) {
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        TransactionStatus status = transactionManager.getTransaction(def);
+        try {
+            Petition existingPetition = petitionRepository.findById(id).orElseThrow(NotFoundException::new);
+            securityService.userRequired(existingPetition.getOwner());
+
+            Petition updatedPetition = petitionMapper.mapPetitionCreateToEntity(updatedSchema);
+            updatedPetition.setId(existingPetition.getId());
+            updatedPetition.setOwner(existingPetition.getOwner());
+
+            Petition savedPetition = petitionRepository.save(updatedPetition);
+            transactionManager.commit(status);
+
+            return petitionMapper.mapEntityToPetitionRead(savedPetition);
+        } catch (Exception e) {
+            transactionManager.rollback(status);
+            throw e;
+        }
+    }
 }
 

@@ -64,5 +64,13 @@ public class PetitionController {
         petitionService.delete(id);
     }
 
+    @Operation(
+            summary = "Обновить петицию",
+            description = "Обновляет информацию о петиции."
+    )
+    @PutMapping("/{id}")
+    public PetitionRead updatePetition(@PathVariable Long id, @RequestBody @Valid PetitionCreate schema) {
+        return petitionService.update(id, schema);
+    }
 }
 
