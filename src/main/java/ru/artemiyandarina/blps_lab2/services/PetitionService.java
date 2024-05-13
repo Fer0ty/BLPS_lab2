@@ -1,17 +1,27 @@
 package ru.artemiyandarina.blps_lab2.services;
 
+import bitronix.tm.BitronixTransactionManager;
+import bitronix.tm.TransactionManagerServices;
+import jakarta.transaction.*;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import ru.artemiyandarina.blps_lab2.exceptions.NotFoundException;
+import ru.artemiyandarina.blps_lab2.models.ApproveStatus;
 import ru.artemiyandarina.blps_lab2.models.Petition;
 import ru.artemiyandarina.blps_lab2.repositories.PetitionRepository;
 import ru.artemiyandarina.blps_lab2.schemas.petition.PetitionCreate;
 import ru.artemiyandarina.blps_lab2.schemas.petition.PetitionRead;
 import ru.artemiyandarina.blps_lab2.services.mapping.PetitionMapper;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,18 +45,20 @@ public class PetitionService {
         return petitionRepository.findAll().stream().map(petitionMapper::mapEntityToPetitionRead).collect(Collectors.toSet());
     }
 
+    @SneakyThrows
     public PetitionRead create(PetitionCreate schema) {
-        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-        TransactionStatus status = transactionManager.getTransaction(def);
+        BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
         try {
+            btm.begin();
             Petition newPetition = petitionMapper.mapPetitionCreateToEntity(schema);
             newPetition.setOwner(securityService.getCurrentUser());
             petitionRepository.save(newPetition);
-            transactionManager.commit(status);
+            btm.commit();
             return petitionMapper.mapEntityToPetitionRead(newPetition);
-        } catch (Exception e) {
-            transactionManager.rollback(status);
-            throw e;
+        } catch (HeuristicRollbackException | RollbackException | NotSupportedException | HeuristicMixedException |
+                 SystemException e) {
+            btm.rollback();
+            throw new RuntimeException(e);
         }
     }
 
@@ -65,14 +77,12 @@ public class PetitionService {
         try {
             Petition existingPetition = petitionRepository.findById(id).orElseThrow(NotFoundException::new);
             securityService.userRequired(existingPetition.getOwner());
-
             Petition updatedPetition = petitionMapper.mapPetitionCreateToEntity(updatedSchema);
             updatedPetition.setId(existingPetition.getId());
             updatedPetition.setOwner(existingPetition.getOwner());
-
+            updatedPetition.setApproveStatus(ApproveStatus.ON_HOLD.toString());
             Petition savedPetition = petitionRepository.save(updatedPetition);
             transactionManager.commit(status);
-
             return petitionMapper.mapEntityToPetitionRead(savedPetition);
         } catch (Exception e) {
             transactionManager.rollback(status);
