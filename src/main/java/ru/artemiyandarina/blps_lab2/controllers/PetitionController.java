@@ -41,11 +41,11 @@ public class PetitionController {
 
     @Operation(
             summary = "Список петиций",
-            description = "Возвращает список всех петиций."
+            description = "Возвращает список всех подтвержденных петиций."
     )
     @GetMapping
-    public Set<PetitionRead> getAll() {
-        return petitionService.getAll();
+    public Set<PetitionRead> getConfirmed() {
+        return petitionService.getConfirmed();
     }
 
     @Operation(

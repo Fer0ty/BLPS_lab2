@@ -42,9 +42,12 @@ public class PetitionService {
     }
 
 //  todo: Вывод петиции, у которой статус CONFIRMED
-    public Set<PetitionRead> getAll() {
-        return petitionRepository.findAll().stream().map(petitionMapper::mapEntityToPetitionRead).collect(Collectors.toSet());
-    }
+public Set<PetitionRead> getConfirmed() {
+    return petitionRepository.findAll()
+            .stream().filter(petition -> petition.getApproveStatus().equals(ApproveStatus.CONFIRMED.toString()))
+            .map(petitionMapper::mapEntityToPetitionRead)
+            .collect(Collectors.toSet());
+}
 
     @SneakyThrows
     public PetitionRead create(PetitionCreate schema) {
