@@ -33,3 +33,5 @@ build/
 .vscode/
 
 /config.sh
+/btm1.tlog
+/btm2.tlog

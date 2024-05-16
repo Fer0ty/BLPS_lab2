@@ -71,10 +71,11 @@ public class PetitionService {
         securityService.userRequired(petition.getOwner());
         petitionRepository.delete(petition);
     }
+    @SneakyThrows
     public PetitionRead update(Long id, PetitionCreate updatedSchema) {
-        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-        TransactionStatus status = transactionManager.getTransaction(def);
+        BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
         try {
+            btm.begin();
             Petition existingPetition = petitionRepository.findById(id).orElseThrow(NotFoundException::new);
             securityService.userRequired(existingPetition.getOwner());
             Petition updatedPetition = petitionMapper.mapPetitionCreateToEntity(updatedSchema);
@@ -82,11 +83,12 @@ public class PetitionService {
             updatedPetition.setOwner(existingPetition.getOwner());
             updatedPetition.setApproveStatus(ApproveStatus.ON_HOLD.toString());
             Petition savedPetition = petitionRepository.save(updatedPetition);
-            transactionManager.commit(status);
+            btm.commit();
             return petitionMapper.mapEntityToPetitionRead(savedPetition);
-        } catch (Exception e) {
-            transactionManager.rollback(status);
-            throw e;
+        } catch (HeuristicRollbackException | RollbackException | NotSupportedException | HeuristicMixedException |
+                 SystemException e) {
+            btm.rollback();
+            throw new RuntimeException(e);
         }
     }
 }
