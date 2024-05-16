@@ -16,7 +16,11 @@ public class SecurityService {
 
     public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return userRepository.findByEmail(auth.getName()).orElseThrow(NotFoundException::new);
+        return userRepository
+                .findByEmail(auth.getName())
+                .orElseThrow(
+                        () -> new NotFoundException(auth.getName(), "User")
+                );
     }
 
     public void userRequired(User user) {

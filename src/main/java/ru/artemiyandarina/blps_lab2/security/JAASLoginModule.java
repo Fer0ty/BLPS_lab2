@@ -34,11 +34,11 @@ public class JAASLoginModule implements LoginModule {
     }
 
     @Override
-    public boolean login() {
-        var nameCallback = new NameCallback("email: ");
+    public boolean login()  {
+        var nameCallback = new NameCallback("login: ");
         var passwordCallback = new PasswordCallback("password: ", false);
         try {
-            callbackHandler.handle(new Callback[]{nameCallback, passwordCallback});
+            callbackHandler.handle(new Callback[] {nameCallback, passwordCallback});
         } catch (IOException | UnsupportedCallbackException e) {
             throw new RuntimeException(e);
         }
@@ -55,8 +55,8 @@ public class JAASLoginModule implements LoginModule {
 
     @Override
     public boolean commit() {
-        if (!loginSucceeded) return false;
-        if (login == null) throw new NotFoundException();
+        if(!loginSucceeded) return false;
+        if(login == null) throw new NotFoundException("null", "User");
         Principal principal = (UserPrincipal) () -> login;
         subject.getPrincipals().add(principal);
         return true;
@@ -69,7 +69,9 @@ public class JAASLoginModule implements LoginModule {
 
     @Override
     public boolean logout() throws LoginException {
-        return false;
+        subject.getPrincipals().removeIf(principal -> principal instanceof UserPrincipal);
+        loginSucceeded = false;
+        return true;
     }
 }
 

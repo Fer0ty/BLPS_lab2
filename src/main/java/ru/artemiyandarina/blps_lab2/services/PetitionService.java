@@ -60,11 +60,11 @@ public class PetitionService {
     }
 
     public PetitionRead getById(Long id) {
-        Petition petition = petitionRepository.findById(id).orElseThrow(NotFoundException::new);
+        Petition petition = petitionRepository.findById(id).orElseThrow(() -> new NotFoundException(id, "Petition"));
         return petitionMapper.mapEntityToPetitionRead(petition);
     }
-    public void delete(Long documentId) {
-        Petition petition = petitionRepository.findById(documentId).orElseThrow(NotFoundException::new);
+    public void delete(Long petitionID) {
+        Petition petition = petitionRepository.findById(petitionID).orElseThrow(() -> new NotFoundException(petitionID, "Petition"));
         securityService.userRequired(petition.getOwner());
         petitionRepository.delete(petition);
     }
@@ -73,7 +73,7 @@ public class PetitionService {
         BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
         try {
             btm.begin();
-            Petition existingPetition = petitionRepository.findById(id).orElseThrow(NotFoundException::new);
+            Petition existingPetition = petitionRepository.findById(id).orElseThrow(() -> new NotFoundException(id, "Petition"));
             securityService.userRequired(existingPetition.getOwner());
             Petition updatedPetition = petitionMapper.mapPetitionCreateToEntity(updatedSchema);
             updatedPetition.setId(existingPetition.getId());

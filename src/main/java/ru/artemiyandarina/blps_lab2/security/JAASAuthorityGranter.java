@@ -15,13 +15,11 @@ import java.util.Set;
 public class JAASAuthorityGranter implements AuthorityGranter {
 
     private final UserRepository userRepository;
-
     @Override
     public Set<String> grant(Principal principal) {
-        Optional<User> user = userRepository.findByEmail(principal.getName());
-        if (user.isPresent()) {
-            return Collections.singleton(user.get().getRole().name());
-        }
-        throw new NotFoundException();
+        User user = userRepository
+                .findByEmail(principal.getName())
+                .orElseThrow(() -> new NotFoundException(principal.getName(), "User"));
+        return Collections.singleton(user.getRole().name());
     }
 }
