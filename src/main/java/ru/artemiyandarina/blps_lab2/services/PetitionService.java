@@ -5,7 +5,6 @@ import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import ru.artemiyandarina.blps_lab2.exceptions.NotFoundException;
@@ -40,12 +39,14 @@ public class PetitionService {
         this.securityService = securityService;
         this.transactionManager = transactionManager;
     }
-public Set<PetitionRead> getConfirmed() {
-    return petitionRepository.findAll()
-            .stream().filter(petition -> petition.getApproveStatus().equals(ApproveStatus.CONFIRMED.toString()))
-            .map(petitionMapper::mapEntityToPetitionRead)
-            .collect(Collectors.toSet());
-}
+
+    //  todo: Вывод петиции, у которой статус CONFIRMED
+    public Set<PetitionRead> getConfirmed() {
+        return petitionRepository.findAll()
+                .stream().filter(petition -> petition.getApproveStatus().equals(ApproveStatus.CONFIRMED.toString()))
+                .map(petitionMapper::mapEntityToPetitionRead)
+                .collect(Collectors.toSet());
+    }
 
     @SneakyThrows
     public PetitionRead create(PetitionCreate schema) {
@@ -68,11 +69,13 @@ public Set<PetitionRead> getConfirmed() {
         Petition petition = petitionRepository.findById(id).orElseThrow(() -> new NotFoundException(id, "Petition"));
         return petitionMapper.mapEntityToPetitionRead(petition);
     }
+
     public void delete(Long petitionID) {
         Petition petition = petitionRepository.findById(petitionID).orElseThrow(() -> new NotFoundException(petitionID, "Petition"));
         securityService.userRequired(petition.getOwner());
         petitionRepository.delete(petition);
     }
+
     @SneakyThrows
     public PetitionRead update(Long id, PetitionCreate updatedSchema) {
         BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
@@ -99,7 +102,7 @@ public Set<PetitionRead> getConfirmed() {
         try {
             btm.begin();
             Petition existingPetition = petitionRepository.findById(id).orElseThrow(() -> new NotFoundException(id, "Petition"));
-            if (!(securityService.getCurrentUser().getRole() == Role.ROLE_MODER)){
+            if (!(securityService.getCurrentUser().getRole() == Role.ROLE_MODER)) {
                 throw new PermissionDeniedException();
             }
             // Проверка статуса петиции
@@ -116,5 +119,14 @@ public Set<PetitionRead> getConfirmed() {
             throw new RuntimeException(e);
         }
     }
+    public Set<PetitionRead> getOnHold() {
+        if(!(securityService.getCurrentUser().getRole().toString().equals(Role.ROLE_MODER.toString())))
+            throw new PermissionDeniedException();
+        return petitionRepository.findAll()
+                .stream().filter(petition -> petition.getApproveStatus().equals(ApproveStatus.ON_HOLD.toString()))
+                .map(petitionMapper::mapEntityToPetitionRead)
+                .collect(Collectors.toSet());
+    }
 }
+
 

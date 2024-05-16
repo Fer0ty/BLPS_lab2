@@ -93,6 +93,15 @@ public class PetitionController {
         }
         return updatedPetition;
     }
+    @Operation(
+            summary = "Список петиции для модератора",
+            description = "Список петиции для модератора cо статусом ON_HOLD"
+    )
+    @GetMapping("/on-hold")
+    public Set<PetitionRead> getPetitionsOnHold() {
+        return petitionService.getOnHold();
+    }
+
 
 }
 
