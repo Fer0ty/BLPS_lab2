@@ -40,8 +40,6 @@ public class PetitionService {
         this.securityService = securityService;
         this.transactionManager = transactionManager;
     }
-
-//  todo: Вывод петиции, у которой статус CONFIRMED
 public Set<PetitionRead> getConfirmed() {
     return petitionRepository.findAll()
             .stream().filter(petition -> petition.getApproveStatus().equals(ApproveStatus.CONFIRMED.toString()))
