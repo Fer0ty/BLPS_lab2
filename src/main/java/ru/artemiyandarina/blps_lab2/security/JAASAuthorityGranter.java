@@ -8,7 +8,6 @@ import ru.artemiyandarina.blps_lab2.repositories.UserRepository;
 
 import java.security.Principal;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 
 @RequiredArgsConstructor
