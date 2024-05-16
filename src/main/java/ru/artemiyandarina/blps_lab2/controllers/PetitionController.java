@@ -29,6 +29,9 @@ public class PetitionController {
         this.petitionService = petitionService;
     }
 
+
+    // todo: @RequestParam Country country, чтобы можно было выбрать страну по клику.
+
     @Operation(
             summary = "Создать петицию",
             description = "Создает петицию...."
@@ -75,6 +78,10 @@ public class PetitionController {
         return petitionService.update(id, schema);
     }
 
+    @Operation(
+            summary = "Выставить статус петиции",
+            description = "Функция модератора. Меняет статус петиции с ON_HOLD на REJECTED или APPROVED"
+    )
     @PutMapping("/{id}/status")
     public PetitionRead updatePetitionStatus(@PathVariable Long id,
                                              @RequestParam ApproveStatus newStatus) {
