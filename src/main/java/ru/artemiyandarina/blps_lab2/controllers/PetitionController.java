@@ -7,10 +7,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.artemiyandarina.blps_lab2.models.ApproveStatus;
 import ru.artemiyandarina.blps_lab2.schemas.petition.PetitionCreate;
 import ru.artemiyandarina.blps_lab2.schemas.petition.PetitionRead;
 import ru.artemiyandarina.blps_lab2.services.PetitionService;
 
+import javax.transaction.SystemException;
 import java.util.Set;
 
 @Tag(
@@ -72,5 +74,18 @@ public class PetitionController {
     public PetitionRead updatePetition(@PathVariable Long id, @RequestBody @Valid PetitionCreate schema) {
         return petitionService.update(id, schema);
     }
+
+    @PutMapping("/{id}/status")
+    public PetitionRead updatePetitionStatus(@PathVariable Long id,
+                                             @RequestParam ApproveStatus newStatus) {
+        PetitionRead updatedPetition = null;
+        try {
+            updatedPetition = petitionService.updateStatus(id, newStatus);
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+        return updatedPetition;
+    }
+
 }
 

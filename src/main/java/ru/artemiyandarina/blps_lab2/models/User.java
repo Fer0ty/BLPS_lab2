@@ -39,9 +39,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role = Role.ROLE_USER;
 
-    @OneToMany(mappedBy = "owner")
-    private List<Petition> documents = new ArrayList<>();
-
     public void setPassword(String password) {
         this.passwordHash = new BCryptPasswordEncoder().encode(password);
     }

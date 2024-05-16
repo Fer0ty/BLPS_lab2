@@ -4,11 +4,15 @@ import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import ru.artemiyandarina.blps_lab2.exceptions.NotFoundException;
+import ru.artemiyandarina.blps_lab2.exceptions.PermissionDeniedException;
 import ru.artemiyandarina.blps_lab2.models.ApproveStatus;
 import ru.artemiyandarina.blps_lab2.models.Petition;
+import ru.artemiyandarina.blps_lab2.models.Role;
 import ru.artemiyandarina.blps_lab2.repositories.PetitionRepository;
 import ru.artemiyandarina.blps_lab2.schemas.petition.PetitionCreate;
 import ru.artemiyandarina.blps_lab2.schemas.petition.PetitionRead;
@@ -80,6 +84,29 @@ public class PetitionService {
             updatedPetition.setOwner(existingPetition.getOwner());
             updatedPetition.setApproveStatus(ApproveStatus.ON_HOLD.toString());
             Petition savedPetition = petitionRepository.save(updatedPetition);
+            btm.commit();
+            return petitionMapper.mapEntityToPetitionRead(savedPetition);
+        } catch (HeuristicRollbackException | RollbackException | NotSupportedException | HeuristicMixedException |
+                 SystemException e) {
+            btm.rollback();
+            throw new RuntimeException(e);
+        }
+    }
+
+    public PetitionRead updateStatus(Long id, ApproveStatus newStatus) throws SystemException {
+        BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
+        try {
+            btm.begin();
+            Petition existingPetition = petitionRepository.findById(id).orElseThrow(() -> new NotFoundException(id, "Petition"));
+            if (!(securityService.getCurrentUser().getRole() == Role.ROLE_MODER)){
+                throw new PermissionDeniedException();
+            }
+            // Проверка статуса петиции
+            if (!existingPetition.getApproveStatus().equals(ApproveStatus.ON_HOLD.toString())) {
+                throw new AccessDeniedException("Невозможно изменить статус петиции. Петиция должна быть в статусе ON_HOLD.");
+            }
+            existingPetition.setApproveStatus(newStatus.toString());
+            Petition savedPetition = petitionRepository.save(existingPetition);
             btm.commit();
             return petitionMapper.mapEntityToPetitionRead(savedPetition);
         } catch (HeuristicRollbackException | RollbackException | NotSupportedException | HeuristicMixedException |
