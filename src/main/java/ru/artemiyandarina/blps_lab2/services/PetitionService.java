@@ -2,13 +2,10 @@ package ru.artemiyandarina.blps_lab2.services;
 
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
-import jakarta.transaction.*;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import ru.artemiyandarina.blps_lab2.exceptions.NotFoundException;
 import ru.artemiyandarina.blps_lab2.models.ApproveStatus;
 import ru.artemiyandarina.blps_lab2.models.Petition;
